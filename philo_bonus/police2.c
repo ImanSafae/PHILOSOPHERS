@@ -13,8 +13,8 @@ void	*deathsignal(void *philos)
 		{
 			printf("%d %d died\n", get_time((*philo)->data->begin), (*philo)->id);
 			sem_close((*philo)->data->forks);
-			sem_unlink("FORKS");
-			kill(0, SIGKILL);
+			sem_unlink("FORKSEM");
+			kill(0, SIGSTOP);
 			exit(EXIT_FAILURE);
 		}
 	}

@@ -31,7 +31,8 @@ void	create_philo(t_philos *philo)
 				sleep_and_think(&philo);
 			}
 		}
-		// exit(EXIT_SUCCESS); // finir par un exit sinon le fils va revenir dans la boucle du main et recréer un fork 
+		// exit(EXIT_SUCCESS); // finir par un exit sinon le fils va revenir dans la boucle du main et recréer un fork
+		sem_close(philo->data->forks);
 		waitpid(-1, NULL, 0);
 	}
 }
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 	parse_args(argc, argv, &data);
 	init_structs(&data, &philos);
 	i = 0;
-	data->forks = sem_open("FORKS", O_CREAT, S_IRWXU, data->nbr_of_forks);
+	data->forks = sem_open("FORKSEM", O_CREAT, S_IRWXU, data->nbr_of_forks);
 	gettimeofday(&data->begin, NULL);
 	while (i < data->nbr_of_philo)
 	{
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
 	// 	stop_simulation(&philos);
 	// 	// printf("checking for death\n");
 	// }
-	waitpid(-1, NULL, 0);
+	waitpid(0, NULL, 0);
 	// sem_unlink("forks");
 	// while (1)
 	// {
