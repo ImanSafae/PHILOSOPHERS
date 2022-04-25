@@ -13,26 +13,26 @@ int	check_death(t_philos *philos)
 	return (0);
 }
 
-void	food_police(t_philos **philos)
-{
-	int	nbr_of_meals;
-	int	i;
+// void	food_police(t_philos **philos)
+// {
+// 	int	nbr_of_meals;
+// 	int	i;
 
-	nbr_of_meals = (*philos)->data->nbr_of_meals;
-	i = 0;
-	while (i < (*philos)->data->nbr_of_philo)
-	{
-		if ((*philos)[i].meals != nbr_of_meals)
-		{
-			printf("philo %d only ate %d times\n", (*philos)[i].id, (*philos)[i].meals);
-			return ;
-		}
-		i++;
-	}
-	sem_close((*philos)->data->forks);
-	printf("ALL PHILOS ATE\n");
-	exit(EXIT_SUCCESS);
-}
+// 	nbr_of_meals = (*philos)->data->nbr_of_meals;
+// 	i = 0;
+// 	while (i < (*philos)->data->nbr_of_philo)
+// 	{
+// 		if ((*philos)[i].meals != nbr_of_meals)
+// 		{
+// 			printf("philo %d only ate %d times\n", (*philos)[i].id, (*philos)[i].meals);
+// 			return ;
+// 		}
+// 		i++;
+// 	}
+// 	sem_close((*philos)->data->forks);
+// 	printf("ALL PHILOS ATE\n");
+// 	exit(EXIT_SUCCESS);
+// }
 
 void	death_police(t_philos **philos)
 {

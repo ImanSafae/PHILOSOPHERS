@@ -68,6 +68,7 @@ void	parse_args(int argc, char **argv, t_data **data)
 	(*data)->time_to_die = ft_atoi(argv[2]);
 	(*data)->time_to_eat = ft_atoi(argv[3]);
 	(*data)->time_to_sleep = ft_atoi(argv[4]);
+	(*data)->sons = malloc(sizeof(pid_t) * (*data)->nbr_of_philo);
 	if (argv[5])
 		(*data)->nbr_of_meals = ft_atoi(argv[5]);
 	else
@@ -86,7 +87,6 @@ void	init_structs(t_data **data, t_philos **philos)
 		(*philos)[i].meals = 0;
 		(*philos)[i].last_meal = 0;
 		(*philos)[i].data = (*data);
-		(*philos)[i].life = 1;
 		i++;
 	}
 	(*data)->philos = philos;

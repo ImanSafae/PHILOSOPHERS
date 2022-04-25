@@ -29,11 +29,11 @@ typedef struct s_philos {
 	int				id;
 	int				meals;
 	int				last_meal;
-	int				life;
 	struct s_data	*data;
 }				t_philos;
 
 typedef struct s_data {
+	struct timeval	begin;
 	int				nbr_of_philo;
 	int				time_to_eat;
 	int				time_to_die;
@@ -42,7 +42,8 @@ typedef struct s_data {
 	unsigned int	nbr_of_forks;
 	t_philos		**philos;
 	sem_t			*forks;
-	struct timeval	begin;
+	sem_t			*printer;
+	pid_t			*sons;
 }				t_data;
 
 // ERROR CODES
@@ -74,12 +75,7 @@ void	eat(t_philos **philo);
 void	sleep_and_think(t_philos **philo);
 
 // FOOD AND DEATH CHECKERS
-int		check_death(t_philos *philos);
-void	death_police(t_philos **philos);
 void	food_police(t_philos **philos);
-void	*police_thread(void *philo);
-
 void	*deathsignal(void *philos);
-void	stop_simulation(t_philos **philos);
 
 #endif

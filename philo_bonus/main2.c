@@ -13,28 +13,18 @@ void	create_philo(t_philos *philo)
 	if (pid == 0) // on est dans le fils
 	{
 		pthread_create(&watcher, NULL, deathsignal, philo);
-		if (philo->data->nbr_of_meals != 0)
+		pthread_detach(watcher);
+		while (1)
 		{
-			while (philo->meals < philo->data->nbr_of_meals)
-			{
-				eat(&philo);
-				(philo->meals)++;
-				sleep_and_think(&philo);
-			}
-		}
-		else
-		{
-			while (1)
-			{
-				eat(&philo);
-				(philo->meals)++;
-				sleep_and_think(&philo);
-			}
+			eat(&philo);
+			(philo->meals)++;
+			sleep_and_think(&philo);
 		}
 		// exit(EXIT_SUCCESS); // finir par un exit sinon le fils va revenir dans la boucle du main et recréer un fork
 		sem_close(philo->data->forks);
-		waitpid(-1, NULL, 0);
 	}
+	else
+		(philo->data->sons)[(philo->id) - 1] = pid;
 }
 
 int main(int argc, char **argv)
@@ -46,7 +36,10 @@ int main(int argc, char **argv)
 	parse_args(argc, argv, &data);
 	init_structs(&data, &philos);
 	i = 0;
-	data->forks = sem_open("FORKSEM", O_CREAT, S_IRWXU, data->nbr_of_forks);
+	sem_unlink("FORKS");
+	sem_unlink("PRINTER");
+	data->forks = sem_open("FORKS", O_CREAT, S_IRWXU, data->nbr_of_forks);
+	data->printer = sem_open("PRINTER", O_CREAT, S_IRWXU, 1);
 	gettimeofday(&data->begin, NULL);
 	while (i < data->nbr_of_philo)
 	{
@@ -55,14 +48,20 @@ int main(int argc, char **argv)
 		create_philo(&philos[i]);
 		i++;
 	}
-	// while (1)
+	i = 0;
+	while (data->nbr_of_meals != 0)
+	{
+		while (i < data->nbr_of_philo)
+		{
+			printf("philo %d's last meal = %d\n", philos[i].id, philos[i].last_meal);
+			i++;
+		}
+		i = 0;
+		food_police(&philos);
+	}
+	// while (i < data->nbr_of_philo)
 	// {
-	// 	stop_simulation(&philos);
-	// 	// printf("checking for death\n");
-	// }
-	waitpid(0, NULL, 0);
-	// sem_unlink("forks");
-	// while (1)
-	// {
-	// }
+	// 	waitpid(data->sons[i], NULL, 0);
+	// 	i++;
+	// 
 }
