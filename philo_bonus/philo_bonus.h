@@ -43,6 +43,7 @@ typedef struct s_data {
 	t_philos		**philos;
 	sem_t			*forks;
 	sem_t			*printer;
+	sem_t			*meals;
 	pid_t			*sons;
 }				t_data;
 
@@ -64,7 +65,7 @@ int		ft_isspace(char c);
 int		ft_isdigit(int c);
 int		no_numeric_chars(char *str);
 int		ft_atoi(const char *str);
-
+void	wait_for_sons(t_data **data);
 
 // TIME
 int		get_time(struct timeval begin);
@@ -73,9 +74,11 @@ void	ft_usleep(int ms, struct timeval begin);
 // ACTIVITIES
 void	eat(t_philos **philo);
 void	sleep_and_think(t_philos **philo);
+void	unlimited_meals(t_philos **philos);
+void	limited_meals(t_philos **philos);
 
 // FOOD AND DEATH CHECKERS
-void	food_police(t_philos **philos);
+void	food_police(t_data **data);
 void	*deathsignal(void *philos);
 
 #endif

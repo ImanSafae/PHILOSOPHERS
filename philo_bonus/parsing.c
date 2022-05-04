@@ -28,6 +28,24 @@ void	send_error(t_data **data, int error_code)
 	exit(EXIT_FAILURE);
 }
 
+void	check_word_norm(char *arg, t_data **data)
+{
+	int	j;
+
+	j = 0;
+	while (arg[j])
+	{
+		if (!ft_isdigit(arg[j]) && !ft_isspace(arg[j]))
+		{
+			if (arg[j] == '-')
+				send_error(data, NEGATIVE_VALUE);
+			else
+				send_error(data, NON_NUMERIC_ARG);
+		}
+		j++;
+	}
+}
+
 void	check_errors(int argc, char **argv, t_data **data)
 {
 	int	i;
@@ -41,17 +59,7 @@ void	check_errors(int argc, char **argv, t_data **data)
 	{
 		if (no_numeric_chars(argv[i]))
 			send_error(data, NON_NUMERIC_ARG);
-		while (argv[i][j])
-		{
-			if (!ft_isdigit(argv[i][j]) && !ft_isspace(argv[i][j]))
-			{
-				if (argv[i][j] == '-')
-					send_error(data, NEGATIVE_VALUE);
-				else
-					send_error(data, NON_NUMERIC_ARG);
-			}
-			j++;
-		}
+		check_word_norm(argv[i], data);
 		j = 0;
 		i++;
 	}

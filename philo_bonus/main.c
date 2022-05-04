@@ -5,43 +5,68 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: itaouil <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/09 15:02:13 by itaouil           #+#    #+#             */
-/*   Updated: 2022/04/09 15:02:14 by itaouil          ###   ########.fr       */
+/*   Created: 2022/05/03 16:03:06 by itaouil           #+#    #+#             */
+/*   Updated: 2022/05/03 16:03:08 by itaouil          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "philo_bonus.h"
 
-void	philo_routine(t_philos *philo)
+void	set_meals(t_data **data)
 {
-	pid_t		pid;
-	// pthread_t	watcher;
+	int	i;
+	int	nbr_philo;
 
-	pid = fork();
-	if (pid == 0) // un fils = un philo
+	i = 0;
+	nbr_philo = (*data)->nbr_of_philo;
+	if ((*data)->nbr_of_meals != 0)
 	{
-		// pthread_create(&watcher, NULL, police_thread, philo->data->philos);
-		// pthread_detach(watcher);
-		if (philo->data->nbr_of_meals != 0)
+		sem_unlink("MEALS");
+		(*data)->meals = sem_open("MEALS", O_CREAT, S_IRWXU, nbr_philo);
+		while (i < (*data)->nbr_of_philo)
 		{
-			while (philo->meals < philo->data->nbr_of_meals)
-			{
-				eat(&philo);
-				(philo->meals)++;
-				sleep_and_think(&philo);
-			}
-			printf("philo abt to exit\n");
-			exit(EXIT_SUCCESS);
+			sem_wait((*data)->meals);
+			i++;
 		}
-		else
+		i = 0;
+	}
+}
+
+void	set_semaphores(t_data **data)
+{
+	sem_unlink("FORKS");
+	sem_unlink("PRINTER");
+	(*data)->forks = sem_open("FORKS", O_CREAT, S_IRWXU, (*data)->nbr_of_forks);
+	(*data)->printer = sem_open("PRINTER", O_CREAT, S_IRWXU, 1);
+}
+
+void	create_philo(t_philos *philo)
+{
+	int			i;
+	pid_t		pid;
+	pthread_t	watcher;
+
+	i = 0;
+	pid = fork();
+	if (pid == -1)
+		send_error(&(philo->data), FORK_ERROR);
+	if (pid == 0)
+	{
+		pthread_create(&watcher, NULL, deathsignal, philo);
+		pthread_detach(watcher);
+		while (1)
 		{
-			while (1)
+			eat(&philo);
+			sleep_and_think(&philo);
+			if (philo->data->nbr_of_meals != 0)
 			{
-				eat(&philo);
-				(philo->meals)++;
-				sleep_and_think(&philo);
+				if (philo->meals == philo->data->nbr_of_meals)
+					sem_post(philo->data->meals);
 			}
 		}
 	}
+	else
+		(philo->data->sons)[(philo->id) - 1] = pid;
 }
 
 int	main(int argc, char **argv)
@@ -53,19 +78,16 @@ int	main(int argc, char **argv)
 	i = 0;
 	parse_args(argc, argv, &data);
 	init_structs(&data, &philos);
+	set_semaphores(&data);
+	set_meals(&data);
 	gettimeofday(&data->begin, NULL);
-	data->forks = sem_open("forks", O_CREAT, S_IRWXU, data->nbr_of_forks);
 	while (i < data->nbr_of_philo)
 	{
-		philo_routine(&philos[i]);
+		create_philo(&philos[i]);
 		i++;
-		// printf("stuck in infinite loop\n");
 	}
-	while (data->nbr_of_meals != 0)
-	{
-		// death_police(&philos); à mettre dans un thread dans les processus correspondants
-		// food_police(&philos);
-		// printf("stuck in infinite loop\n");
-	}
-	// waitpid()
+	if (data->nbr_of_meals != 0)
+		food_police(&data);
+	else
+		wait_for_sons(&data);
 }

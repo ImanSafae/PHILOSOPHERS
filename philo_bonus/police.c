@@ -1,63 +1,72 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   police.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: itaouil <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/05/03 16:02:38 by itaouil           #+#    #+#             */
+/*   Updated: 2022/05/03 16:02:39 by itaouil          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo_bonus.h"
 
-int	check_death(t_philos *philos)
+void	*deathsignal(void *philos)
 {
-	int	time_to_die;
+	t_philos	**philo;
+	int			time_to_die;
+	int			i;
+	int			id;
 
-	time_to_die = philos->data->time_to_die;
-	if (get_time(philos->data->begin) - philos->last_meal > time_to_die)
+	philo = (t_philos **)&philos;
+	time_to_die = (*philo)->data->time_to_die;
+	i = 0;
+	id = (*philo)->id;
+	while (1)
 	{
-		printf("%d %d died\n", get_time(philos->data->begin), philos->id);
-		return (1);
+		if (get_time((*philo)->data->begin)
+			> ((*philo)->last_meal + time_to_die))
+		{
+			sem_wait((*philo)->data->printer);
+			printf("%d %d died\n", get_time((*philo)->data->begin), id);
+			sem_close((*philo)->data->forks);
+			while (i < (*philo)->data->nbr_of_philo)
+			{
+				kill((*philo)->data->sons[i], SIGINT);
+				i++;
+			}
+			exit(EXIT_SUCCESS);
+		}
 	}
-	return (0);
 }
 
-// void	food_police(t_philos **philos)
-// {
-// 	int	nbr_of_meals;
-// 	int	i;
-
-// 	nbr_of_meals = (*philos)->data->nbr_of_meals;
-// 	i = 0;
-// 	while (i < (*philos)->data->nbr_of_philo)
-// 	{
-// 		if ((*philos)[i].meals != nbr_of_meals)
-// 		{
-// 			printf("philo %d only ate %d times\n", (*philos)[i].id, (*philos)[i].meals);
-// 			return ;
-// 		}
-// 		i++;
-// 	}
-// 	sem_close((*philos)->data->forks);
-// 	printf("ALL PHILOS ATE\n");
-// 	exit(EXIT_SUCCESS);
-// }
-
-void	death_police(t_philos **philos)
+void	food_police(t_data **data)
 {
 	int	i;
+	int	nbr_philo;
 
 	i = 0;
-	while (i < (*philos)->data->nbr_of_philo)
+	nbr_philo = (*data)->nbr_of_philo;
+	sem_wait((*data)->meals);
+	sem_wait((*data)->printer);
+	printf("%d philosophers ate %d times\n", nbr_philo, (*data)->nbr_of_meals);
+	sem_close((*data)->meals);
+	while (i < nbr_philo)
 	{
-		if (check_death(&(*philos)[i]) == 1)
-		{
-			sem_close((*philos)->data->forks);
-			kill(-1, SIGKILL);
-			exit(EXIT_FAILURE);
-		}
+		kill((*data)->sons[i], SIGINT);
 		i++;
 	}
 }
 
-void	*police_thread(void *philo)
+void	wait_for_sons(t_data **data)
 {
-	t_philos	*ph;
+	int	i;
 
-	ph = (t_philos *)philo;
-	while (1)
+	i = 0;
+	while (i < (*data)->nbr_of_philo - 1)
 	{
-		death_police(&ph);
+		waitpid((*data)->sons[i], NULL, 0);
+		i++;
 	}
 }

@@ -1,4 +1,4 @@
-FILES = activities.c ft_atoi.c main2.c parsing.c police2.c time.c utils.c
+FILES = activities.c ft_atoi.c main.c parsing.c police.c time.c utils.c
 
 OBJS = ${FILES:.c=.o}
 
@@ -9,7 +9,7 @@ FLAGS = -Wall -Wextra -Werror -g
 %.o:	%.c
 	gcc -c ${FLAGS} -o $@ $<
 
-all: ${NAME}
+bonus: ${NAME}
 
 ${NAME}: ${OBJS}
 	gcc -o ${NAME} ${OBJS}
